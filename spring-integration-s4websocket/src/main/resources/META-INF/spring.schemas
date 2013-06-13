@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/websocket/spring-integration-websocket-3.0.xsd=org/springframework/integration/websocket/config/xml/spring-integration-websocket-3.0.xsd
+http\://www.springframework.org/schema/integration/websocket/spring-integration-websocket.xsd=org/springframework/integration/websocket/config/xml/spring-integration-websocket-3.0.xsd
