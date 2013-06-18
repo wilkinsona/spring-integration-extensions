@@ -22,6 +22,10 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractChannelAdapterParser;
 import org.springframework.integration.websocket.inbound.WebSocketMessageDrivenChannelAdapter;
+import org.springframework.util.StringUtils;
+import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
+import org.springframework.web.socket.sockjs.support.DefaultSockJsService;
+import org.springframework.web.socket.sockjs.support.SockJsHttpRequestHandler;
 
 /**
  * The WebSocket Message Driven Channel adapter parser
@@ -38,10 +42,23 @@ public class WebSocketMessageDrivenChannelAdapterParser extends AbstractChannelA
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(WebSocketMessageDrivenChannelAdapter.class);
-
+		builder.addConstructorArgValue(element.getAttribute("path"));
 		builder.addPropertyReference("outputChannel", channelName);
 
-		return builder.getBeanDefinition();
+		String sockjs = element.getAttribute("sockjs");
+		if (StringUtils.hasText(sockjs) && "true".equalsIgnoreCase(sockjs)) {
+			BeanDefinitionBuilder sockJsServiceBuilder = BeanDefinitionBuilder.genericBeanDefinition(DefaultSockJsService.class);
+			sockJsServiceBuilder.addConstructorArgReference("taskScheduler");
+			BeanDefinitionBuilder sockJsHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(SockJsHttpRequestHandler.class);
+			sockJsHandlerBuilder.addConstructorArgValue(sockJsServiceBuilder.getBeanDefinition());
+			sockJsHandlerBuilder.addConstructorArgValue(builder.getBeanDefinition());
+			return sockJsHandlerBuilder.getBeanDefinition();
+		}
+		else {
+			BeanDefinitionBuilder wsHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebSocketHttpRequestHandler.class);
+			wsHandlerBuilder.addConstructorArgValue(builder.getBeanDefinition());
+			return wsHandlerBuilder.getBeanDefinition();
+		}
 	}
 
 }

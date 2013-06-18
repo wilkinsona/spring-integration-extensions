@@ -32,6 +32,16 @@ import org.springframework.web.socket.WebSocketSession;
 public class WebSocketMessageDrivenChannelAdapter extends MessageProducerSupport
 		implements WebSocketHandler {
 
+	private final String path;
+
+	public WebSocketMessageDrivenChannelAdapter(String path) {
+		this.path = path;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
 	@Override
 	public String getComponentType(){
 		return "websocket:inbound-channel-adapter";
