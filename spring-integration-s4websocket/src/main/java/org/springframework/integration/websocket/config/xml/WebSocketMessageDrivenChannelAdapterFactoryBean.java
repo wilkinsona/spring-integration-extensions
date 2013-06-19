@@ -16,8 +16,9 @@
 package org.springframework.integration.websocket.config.xml;
 
 import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.integration.MessageChannel;
+import org.springframework.integration.websocket.core.SessionRegistry;
 import org.springframework.integration.websocket.inbound.WebSocketMessageDrivenChannelAdapter;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.Assert;
 import org.springframework.web.socket.WebSocketHandler;
@@ -45,6 +46,8 @@ public class WebSocketMessageDrivenChannelAdapterFactoryBean extends AbstractFac
 
 	private volatile TaskScheduler taskScheduler;
 
+	private volatile SessionRegistry sessionRegistry;
+
 	public void setOutputChannel(MessageChannel outputChannel) {
 		this.outputChannel = outputChannel;
 	}
@@ -61,6 +64,10 @@ public class WebSocketMessageDrivenChannelAdapterFactoryBean extends AbstractFac
 		this.taskScheduler = taskScheduler;
 	}
 
+	public void setSessionRegistry(SessionRegistry sessionRegistry) {
+		this.sessionRegistry = sessionRegistry;
+	}
+
 	@Override
 	public Class<?> getObjectType() {
 		// TODO: different wrapper when running outside a container
@@ -75,7 +82,8 @@ public class WebSocketMessageDrivenChannelAdapterFactoryBean extends AbstractFac
 	@Override
 	protected Object createInstance() throws Exception {
 		Assert.hasText(this.path, "'path' must not be null or empty");
-		WebSocketMessageDrivenChannelAdapter webSocketHandler = new WebSocketMessageDrivenChannelAdapter();
+		Assert.notNull(this.sessionRegistry, "'sessionRegistry' must not be null");
+		WebSocketMessageDrivenChannelAdapter webSocketHandler = new WebSocketMessageDrivenChannelAdapter(this.sessionRegistry);
 		webSocketHandler.setOutputChannel(this.outputChannel);
 		if (this.sockjs) {
 			Assert.notNull(this.taskScheduler, "'taskScheduler' must be provided");

@@ -53,6 +53,19 @@
 					<xsd:union memberTypes="xsd:boolean xsd:string" />
 				</xsd:simpleType>
 			</xsd:attribute>
+			<xsd:attribute name="transformer" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<xsd:documentation>
+							WebSocketMessageInboundTransformer used to transform a
+							WebSocketMessage into a Spring Integration Message
+						</xsd:documentation>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="org.springframework.integration.websocket.inbound.WebSocketMessageInboundTransformer" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 
@@ -97,6 +110,19 @@
 							Specifies the order for invocation when this endpoint is connected as a
 							subscriber to a SubscribableChannel.
 						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="transformer" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:appinfo>
+							<xsd:documentation>
+								WebSocketMessageOutboundTransformer used to transform a
+								Spring Integration Message into a WebSocketMessage
+							</xsd:documentation>
+							<tool:annotation kind="ref">
+								<tool:expected-type type="org.springframework.integration.websocket.outbound.WebSocketMessageOutboundTransformer" />
+							</tool:annotation>
+						</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:attribute>
 			</xsd:complexType>

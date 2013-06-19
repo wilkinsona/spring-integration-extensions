@@ -15,13 +15,11 @@
  */
 package org.springframework.integration.websocket.config.xml;
 
-import org.w3c.dom.Element;
-
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
-import org.springframework.integration.websocket.outbound.WebSocketMessageHandler;
+import org.w3c.dom.Element;
 
 /**
  * The parser for the WebSocket Outbound Channel Adapter.
@@ -31,6 +29,8 @@ import org.springframework.integration.websocket.outbound.WebSocketMessageHandle
  *
  */
 public class WebSocketOutboundChannelAdapterParser extends AbstractOutboundChannelAdapterParser {
+
+	private static final String CLASS_NAME_WEB_SOCKET_MESSAGE_HANDLER = "org.springframework.integration.websocket.outbound.WebSocketMessageHandler";
 
 	@Override
 	protected boolean shouldGenerateId() {
@@ -44,11 +44,16 @@ public class WebSocketOutboundChannelAdapterParser extends AbstractOutboundChann
 
 	@Override
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(CLASS_NAME_WEB_SOCKET_MESSAGE_HANDLER);
 
-		final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(WebSocketMessageHandler.class);
+		String transformerAttribute = element.getAttribute("transformer");
+		if (transformerAttribute != null) {
+			builder.addPropertyReference("transformer", transformerAttribute);
+		}
+
+		builder.addConstructorArgReference(WebSocketNamespaceUtils.registerSessionRegistryIfNecessary(parserContext.getRegistry()));
 
 		return builder.getBeanDefinition();
-
 	}
 
 }

@@ -33,4 +33,6 @@ public class WebSocketNamespaceHandler extends AbstractIntegrationNamespaceHandl
 		this.registerBeanDefinitionParser("message-driven-channel-adapter",  new WebSocketMessageDrivenChannelAdapterParser());
 		this.registerBeanDefinitionParser("outbound-channel-adapter", new WebSocketOutboundChannelAdapterParser());
 	}
+
+
 }

@@ -15,10 +15,9 @@
  */
 package org.springframework.integration.websocket.inbound;
 
-import org.springframework.integration.Message;
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.integration.support.MessageBuilder;
-import org.springframework.integration.websocket.support.WebSocketHeaders;
+import org.springframework.integration.websocket.core.SessionRegistry;
+import org.springframework.util.Assert;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketMessage;
@@ -32,6 +31,14 @@ import org.springframework.web.socket.WebSocketSession;
 public class WebSocketMessageDrivenChannelAdapter extends MessageProducerSupport
 		implements WebSocketHandler {
 
+	private final SessionRegistry sessionRegistry;
+
+	private volatile WebSocketMessageInboundTransformer transformer = new DefaultWebSocketMessageInboundTransformer();
+
+	public WebSocketMessageDrivenChannelAdapter(SessionRegistry sessionManager) {
+		this.sessionRegistry = sessionManager;
+	}
+
 	@Override
 	public String getComponentType(){
 		return "websocket:inbound-channel-adapter";
@@ -39,29 +46,22 @@ public class WebSocketMessageDrivenChannelAdapter extends MessageProducerSupport
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-		// TODO Auto-generated method stub
-
+		this.sessionRegistry.putSession(session);
 	}
 
 	@Override
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> wsMessage) throws Exception {
-		Message<?> message = MessageBuilder.withPayload(wsMessage.getPayload())
-				// TODO: Use a handle to the session instead of the session itself
-				.setHeader(WebSocketHeaders.WS_SESSION, session)
-				.build();
-		this.sendMessage(message);
+		this.sendMessage(this.transformer.transform(wsMessage, session));
 	}
 
 	@Override
 	public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-		// TODO Auto-generated method stub
-
+		// TODO Remove the session?
 	}
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-		// TODO Auto-generated method stub
-
+		this.sessionRegistry.removeSession(session.getId());
 	}
 
 	@Override
@@ -69,5 +69,8 @@ public class WebSocketMessageDrivenChannelAdapter extends MessageProducerSupport
 		return false;
 	}
 
-
+	public void setTransformer(WebSocketMessageInboundTransformer transformer) {
+		Assert.notNull(transformer, "transformer must not be null");
+		this.transformer = transformer;
+	}
 }

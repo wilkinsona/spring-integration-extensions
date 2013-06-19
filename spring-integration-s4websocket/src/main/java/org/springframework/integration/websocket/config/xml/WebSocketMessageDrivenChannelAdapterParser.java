@@ -15,14 +15,13 @@
  */
 package org.springframework.integration.websocket.config.xml;
 
-import org.w3c.dom.Element;
-
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.util.StringUtils;
+import org.w3c.dom.Element;
 
 /**
  * The WebSocket Message Driven Channel adapter parser
@@ -33,15 +32,19 @@ import org.springframework.util.StringUtils;
  */
 public class WebSocketMessageDrivenChannelAdapterParser extends AbstractChannelAdapterParser {
 
+	private static final String CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER_FACTORY_BEAN = WebSocketNamespaceUtils.PACKAGE_NAME_PREFIX + "inbound.WebSocketMessageDrivenChannelAdapterFactoryBean";
 
 	@Override
 	protected AbstractBeanDefinition doParse(Element element, ParserContext parserContext, String channelName) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
-				.genericBeanDefinition(WebSocketMessageDrivenChannelAdapterFactoryBean.class);
+				.genericBeanDefinition(CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER_FACTORY_BEAN);
 		builder.addPropertyValue("path", element.getAttribute("path"));
 		builder.addPropertyReference("outputChannel", channelName);
+		builder.addPropertyReference("sessionRegistry", WebSocketNamespaceUtils.registerSessionRegistryIfNecessary(parserContext.getRegistry()));
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "sockjs");
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder,  element,  "transformer");
+
 		String sockjs = element.getAttribute("sockjs");
 		if (StringUtils.hasText(sockjs) && "true".equalsIgnoreCase(sockjs)) {
 			// TODO: make scheduler configurable instead of using the SI default

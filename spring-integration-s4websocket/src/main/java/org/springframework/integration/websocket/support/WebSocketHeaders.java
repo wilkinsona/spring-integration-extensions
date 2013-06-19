@@ -22,5 +22,5 @@ package org.springframework.integration.websocket.support;
  */
 public abstract class WebSocketHeaders {
 
-	public static final String WS_SESSION = "ws_session";
+	public static final String WS_SESSION_ID = "sessionId";
 }

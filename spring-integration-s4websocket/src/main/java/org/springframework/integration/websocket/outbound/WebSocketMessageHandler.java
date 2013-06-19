@@ -16,12 +16,12 @@
 
 package org.springframework.integration.websocket.outbound;
 
-import org.springframework.integration.Message;
 import org.springframework.integration.handler.AbstractMessageHandler;
+import org.springframework.integration.websocket.core.SessionRegistry;
 import org.springframework.integration.websocket.support.WebSocketHeaders;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.WebSocketMessage;
 
 /**
  * @author Gary Russell
@@ -30,18 +30,32 @@ import org.springframework.web.socket.WebSocketSession;
  */
 public class WebSocketMessageHandler extends AbstractMessageHandler {
 
+	private final SessionRegistry sessionManager;
+
+	private volatile WebSocketMessageOutboundTransformer transformer = new DefaultWebSocketMessageOutboundTransformer();
+
+	public WebSocketMessageHandler(SessionRegistry sessionManager) {
+		this.sessionManager = sessionManager;
+	}
+
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-		Assert.isInstanceOf(String.class, message.getPayload());
-		WebSocketSession session = (WebSocketSession) message.getHeaders().get(WebSocketHeaders.WS_SESSION);
-		Assert.notNull(session, "No session in message");
-		// TODO: convert handle to session
-		session.sendMessage(new TextMessage((String) message.getPayload()));
+		String sessionId = (String) message.getHeaders().get(WebSocketHeaders.WS_SESSION_ID);
+		Assert.notNull(sessionId, "No sessionId in message");
+
+		WebSocketMessage<?> wsMessage = transformer.transform(message);
+
+		this.sessionManager.getSession(sessionId).sendMessage(wsMessage);
 	}
 
 	@Override
 	public String getComponentType() {
 		return "websocket:outbound-channel-adapter";
+	}
+
+	public void setTransformer(WebSocketMessageOutboundTransformer transformer) {
+		Assert.notNull(transformer, "transformer must not be null");
+		this.transformer = transformer;
 	}
 
 }

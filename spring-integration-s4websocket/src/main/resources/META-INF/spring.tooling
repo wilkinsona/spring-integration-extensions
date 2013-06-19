@@ -1,4 +1,4 @@
 # Tooling related information for the integration WebSocket namespace
-http\://www.springframework.org/schema/integration/websocket@name=integration WebSocket Namespace
+http\://www.springframework.org/schema/integration/websocket@name=Integration WebSocket Namespace
 http\://www.springframework.org/schema/integration/websocket@prefix=int-wskt
-http\://www.springframework.org/schema/integration/websocket@icon=org/springframework/integration/config/xml/spring-integration-websocket.gif
+http\://www.springframework.org/schema/integration/websocket@icon=org/springframework/integration/websocket/config/xml/spring-integration-websocket.gif
