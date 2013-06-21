@@ -16,12 +16,9 @@
 
 package org.springframework.integration.websocket.inbound;
 
-import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.integration.websocket.config.xml.WebSocketMessageDrivenChannelAdapterFactoryBean.PathAware;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.AbstractDetectingUrlHandlerMapping;
-import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
-import org.springframework.web.socket.sockjs.support.SockJsHttpRequestHandler;
-import org.springframework.web.socket.support.WebSocketHandlerDecorator;
 
 /**
  * A {@link org.springframework.web.servlet.HandlerMapping} implementation that matches
@@ -48,20 +45,11 @@ public class UriPathHandlerMapping extends AbstractDetectingUrlHandlerMapping {
 	protected String[] determineUrlsForHandler(String beanName) {
 		String[] urls = null;
 		Class<?> beanClass = getApplicationContext().getType(beanName);
-		if (WebSocketHttpRequestHandler.class.isAssignableFrom(beanClass) ||
-				SockJsHttpRequestHandler.class.isAssignableFrom(beanClass)) {
-			Object endpoint = getApplicationContext().getBean(beanName);
-			DirectFieldAccessor accessor = new DirectFieldAccessor(endpoint);
-			Object handler = accessor.getPropertyValue("webSocketHandler");
-			while (handler instanceof WebSocketHandlerDecorator) {
-				accessor = new DirectFieldAccessor(handler);
-				handler = accessor.getPropertyValue("delegate");
-			}
-			if (WebSocketMessageDrivenChannelAdapter.class.isAssignableFrom(handler.getClass())) {
-				String path = ((WebSocketMessageDrivenChannelAdapter) handler).getPath();
-				if (StringUtils.hasText(path)) {
-					urls = new String[]{path};
-				}
+		if (PathAware.class.isAssignableFrom(beanClass)) {
+			PathAware handler = getApplicationContext().getBean(beanName, PathAware.class);
+			String path = handler.getPath();
+			if (StringUtils.hasText(path)) {
+				urls = new String[]{path};
 			}
 		}
 		return urls;

@@ -63,6 +63,7 @@ dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "org.springframework:spring-websocket:$springVersion"
 	compile "org.springframework:spring-webmvc:$springVersion"
+	compile "javax.servlet:javax.servlet-api:3.0.1"
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "junit:junit-dep:$junitVersion"
 	testCompile "log4j:log4j:$log4jVersion"

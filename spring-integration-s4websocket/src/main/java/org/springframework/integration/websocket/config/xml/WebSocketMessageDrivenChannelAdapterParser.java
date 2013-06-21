@@ -21,11 +21,8 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractChannelAdapterParser;
-import org.springframework.integration.websocket.inbound.WebSocketMessageDrivenChannelAdapter;
+import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
-import org.springframework.web.socket.sockjs.support.DefaultSockJsService;
-import org.springframework.web.socket.sockjs.support.SockJsHttpRequestHandler;
 
 /**
  * The WebSocket Message Driven Channel adapter parser
@@ -41,24 +38,16 @@ public class WebSocketMessageDrivenChannelAdapterParser extends AbstractChannelA
 	protected AbstractBeanDefinition doParse(Element element, ParserContext parserContext, String channelName) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
-				.genericBeanDefinition(WebSocketMessageDrivenChannelAdapter.class);
-		builder.addConstructorArgValue(element.getAttribute("path"));
+				.genericBeanDefinition(WebSocketMessageDrivenChannelAdapterFactoryBean.class);
+		builder.addPropertyValue("path", element.getAttribute("path"));
 		builder.addPropertyReference("outputChannel", channelName);
-
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "sockjs");
 		String sockjs = element.getAttribute("sockjs");
 		if (StringUtils.hasText(sockjs) && "true".equalsIgnoreCase(sockjs)) {
-			BeanDefinitionBuilder sockJsServiceBuilder = BeanDefinitionBuilder.genericBeanDefinition(DefaultSockJsService.class);
-			sockJsServiceBuilder.addConstructorArgReference("taskScheduler");
-			BeanDefinitionBuilder sockJsHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(SockJsHttpRequestHandler.class);
-			sockJsHandlerBuilder.addConstructorArgValue(sockJsServiceBuilder.getBeanDefinition());
-			sockJsHandlerBuilder.addConstructorArgValue(builder.getBeanDefinition());
-			return sockJsHandlerBuilder.getBeanDefinition();
+			// TODO: make scheduler configurable instead of using the SI default
+			builder.addPropertyReference("taskScheduler", "taskScheduler");
 		}
-		else {
-			BeanDefinitionBuilder wsHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebSocketHttpRequestHandler.class);
-			wsHandlerBuilder.addConstructorArgValue(builder.getBeanDefinition());
-			return wsHandlerBuilder.getBeanDefinition();
-		}
+		return builder.getBeanDefinition();
 	}
 
 }
