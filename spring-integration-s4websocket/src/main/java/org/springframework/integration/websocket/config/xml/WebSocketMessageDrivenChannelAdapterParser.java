@@ -36,12 +36,12 @@ public class WebSocketMessageDrivenChannelAdapterParser extends AbstractChannelA
 
 	@Override
 	protected AbstractBeanDefinition doParse(Element element, ParserContext parserContext, String channelName) {
+		WebSocketNamespaceUtils.registerSessionRegistryIfNecessary(parserContext.getRegistry());
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER_FACTORY_BEAN);
 		builder.addPropertyValue("path", element.getAttribute("path"));
 		builder.addPropertyReference("outputChannel", channelName);
-		builder.addPropertyReference("sessionRegistry", WebSocketNamespaceUtils.registerSessionRegistryIfNecessary(parserContext.getRegistry()));
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "sockjs");
 		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder,  element,  "transformer");
 

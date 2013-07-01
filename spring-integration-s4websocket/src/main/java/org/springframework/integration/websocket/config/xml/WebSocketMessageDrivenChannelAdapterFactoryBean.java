@@ -46,8 +46,6 @@ public class WebSocketMessageDrivenChannelAdapterFactoryBean extends AbstractFac
 
 	private volatile TaskScheduler taskScheduler;
 
-	private volatile SessionRegistry sessionRegistry;
-
 	public void setOutputChannel(MessageChannel outputChannel) {
 		this.outputChannel = outputChannel;
 	}
@@ -64,10 +62,6 @@ public class WebSocketMessageDrivenChannelAdapterFactoryBean extends AbstractFac
 		this.taskScheduler = taskScheduler;
 	}
 
-	public void setSessionRegistry(SessionRegistry sessionRegistry) {
-		this.sessionRegistry = sessionRegistry;
-	}
-
 	@Override
 	public Class<?> getObjectType() {
 		// TODO: different wrapper when running outside a container
@@ -82,8 +76,7 @@ public class WebSocketMessageDrivenChannelAdapterFactoryBean extends AbstractFac
 	@Override
 	protected Object createInstance() throws Exception {
 		Assert.hasText(this.path, "'path' must not be null or empty");
-		Assert.notNull(this.sessionRegistry, "'sessionRegistry' must not be null");
-		WebSocketMessageDrivenChannelAdapter webSocketHandler = new WebSocketMessageDrivenChannelAdapter(this.sessionRegistry);
+		WebSocketMessageDrivenChannelAdapter webSocketHandler = new WebSocketMessageDrivenChannelAdapter();
 		webSocketHandler.setOutputChannel(this.outputChannel);
 		if (this.sockjs) {
 			Assert.notNull(this.taskScheduler, "'taskScheduler' must be provided");

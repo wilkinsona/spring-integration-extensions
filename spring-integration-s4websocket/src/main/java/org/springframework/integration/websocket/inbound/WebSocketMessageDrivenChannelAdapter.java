@@ -15,8 +15,14 @@
  */
 package org.springframework.integration.websocket.inbound;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.integration.websocket.core.SessionRegistry;
+import org.springframework.integration.websocket.core.WebSocketSessionListener;
 import org.springframework.util.Assert;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -29,14 +35,18 @@ import org.springframework.web.socket.WebSocketSession;
  *
  */
 public class WebSocketMessageDrivenChannelAdapter extends MessageProducerSupport
-		implements WebSocketHandler {
+		implements WebSocketHandler, BeanFactoryAware {
 
-	private final SessionRegistry sessionRegistry;
+	private final List<WebSocketSessionListener> sessionListeners = new ArrayList<WebSocketSessionListener>();
 
 	private volatile WebSocketMessageInboundTransformer transformer = new DefaultWebSocketMessageInboundTransformer();
 
-	public WebSocketMessageDrivenChannelAdapter(SessionRegistry sessionManager) {
-		this.sessionRegistry = sessionManager;
+	public void onInit() {
+		super.onInit();
+		// TODO Requires bean factory to be a ListableBeanFactory
+		for (Map.Entry<String, WebSocketSessionListener> entry : ((ListableBeanFactory)getBeanFactory()).getBeansOfType(WebSocketSessionListener.class).entrySet()) {
+			sessionListeners.add(entry.getValue());
+		}
 	}
 
 	@Override
@@ -46,7 +56,9 @@ public class WebSocketMessageDrivenChannelAdapter extends MessageProducerSupport
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-		this.sessionRegistry.putSession(session);
+		for (WebSocketSessionListener sessionListener: sessionListeners) {
+			sessionListener.sessionBegan(session);
+		}
 	}
 
 	@Override
@@ -61,7 +73,9 @@ public class WebSocketMessageDrivenChannelAdapter extends MessageProducerSupport
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-		this.sessionRegistry.removeSession(session.getId());
+		for (WebSocketSessionListener sessionListener: sessionListeners) {
+			sessionListener.sessionEnded(session);
+		}
 	}
 
 	@Override

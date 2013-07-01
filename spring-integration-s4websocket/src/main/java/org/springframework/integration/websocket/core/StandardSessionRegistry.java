@@ -5,14 +5,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.web.socket.WebSocketSession;
 
-public class StandardSessionRegistry implements SessionRegistry {
+public class StandardSessionRegistry implements SessionRegistry, WebSocketSessionListener {
 
 	private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<String, WebSocketSession>();
-
-	@Override
-	public void putSession(WebSocketSession session) {
-		sessions.put(session.getId(),  session);
-	}
 
 	@Override
 	public WebSocketSession getSession(String sessionId) {
@@ -20,8 +15,14 @@ public class StandardSessionRegistry implements SessionRegistry {
 	}
 
 	@Override
-	public void removeSession(String sessionId) {
-		sessions.remove(sessionId);
+	public void sessionBegan(WebSocketSession webSocketSession) {
+		sessions.put(webSocketSession.getId(),  webSocketSession);
+
+	}
+
+	@Override
+	public void sessionEnded(WebSocketSession webSocketSession) {
+		sessions.remove(webSocketSession.getId());
 	}
 
 }
