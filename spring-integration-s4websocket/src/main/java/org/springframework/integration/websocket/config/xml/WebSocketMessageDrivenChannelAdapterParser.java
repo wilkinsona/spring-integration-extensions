@@ -32,25 +32,31 @@ import org.w3c.dom.Element;
  */
 public class WebSocketMessageDrivenChannelAdapterParser extends AbstractChannelAdapterParser {
 
-	private static final String CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER_FACTORY_BEAN = WebSocketNamespaceUtils.PACKAGE_NAME_PREFIX + "inbound.WebSocketMessageDrivenChannelAdapterFactoryBean";
+	private static final String CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER = WebSocketNamespaceUtils.PACKAGE_NAME_PREFIX + "inbound.WebSocketMessageDrivenChannelAdapter";
+
+	private static final String CLASS_NAME_REQUEST_HANDLER_FACTORY_BEAN = WebSocketNamespaceUtils.PACKAGE_NAME_PREFIX + "inbound.RequestHandlerFactoryBean";
 
 	@Override
 	protected AbstractBeanDefinition doParse(Element element, ParserContext parserContext, String channelName) {
 		WebSocketNamespaceUtils.registerSessionRegistryIfNecessary(parserContext.getRegistry());
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder
-				.genericBeanDefinition(CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER_FACTORY_BEAN);
-		builder.addPropertyValue("path", element.getAttribute("path"));
-		builder.addPropertyReference("outputChannel", channelName);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "sockjs");
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder,  element,  "transformer");
+		BeanDefinitionBuilder adapterBuilder = BeanDefinitionBuilder
+				.genericBeanDefinition(CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER);
+		adapterBuilder.addPropertyReference("outputChannel", channelName);
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(adapterBuilder,  element,  "transformer");
+		parserContext.getRegistry().registerBeanDefinition("webSocketMessageDrivenChannelAdapter", adapterBuilder.getBeanDefinition());
+
+		BeanDefinitionBuilder requestHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(CLASS_NAME_REQUEST_HANDLER_FACTORY_BEAN);
+		requestHandlerBuilder.addPropertyReference("channelAdapter", "webSocketMessageDrivenChannelAdapter");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(requestHandlerBuilder, element, "sockjs");
+		requestHandlerBuilder.addPropertyValue("path", element.getAttribute("path"));
 
 		String sockjs = element.getAttribute("sockjs");
 		if (StringUtils.hasText(sockjs) && "true".equalsIgnoreCase(sockjs)) {
 			// TODO: make scheduler configurable instead of using the SI default
-			builder.addPropertyReference("taskScheduler", "taskScheduler");
+			requestHandlerBuilder.addPropertyReference("taskScheduler", "taskScheduler");
 		}
-		return builder.getBeanDefinition();
+		return requestHandlerBuilder.getBeanDefinition();
 	}
 
 }

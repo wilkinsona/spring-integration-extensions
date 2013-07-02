@@ -16,7 +16,7 @@
 
 package org.springframework.integration.websocket.inbound;
 
-import org.springframework.integration.websocket.config.xml.WebSocketMessageDrivenChannelAdapterFactoryBean.PathAware;
+import org.springframework.integration.websocket.inbound.RequestHandlerFactoryBean.PathAware;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.AbstractDetectingUrlHandlerMapping;
 
