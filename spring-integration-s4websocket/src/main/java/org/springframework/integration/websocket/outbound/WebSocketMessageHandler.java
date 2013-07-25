@@ -20,8 +20,10 @@ import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.websocket.core.SessionRegistry;
 import org.springframework.integration.websocket.support.WebSocketHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
 import org.springframework.util.Assert;
 import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 /**
  * @author Gary Russell
@@ -30,12 +32,12 @@ import org.springframework.web.socket.WebSocketMessage;
  */
 public class WebSocketMessageHandler extends AbstractMessageHandler {
 
-	private final SessionRegistry sessionManager;
+	private final SessionRegistry sessionRegistry;
 
 	private volatile WebSocketMessageOutboundTransformer transformer = new DefaultWebSocketMessageOutboundTransformer();
 
 	public WebSocketMessageHandler(SessionRegistry sessionManager) {
-		this.sessionManager = sessionManager;
+		this.sessionRegistry = sessionManager;
 	}
 
 	@Override
@@ -45,7 +47,13 @@ public class WebSocketMessageHandler extends AbstractMessageHandler {
 
 		WebSocketMessage<?> wsMessage = transformer.transform(message);
 
-		this.sessionManager.getSession(sessionId).sendMessage(wsMessage);
+		WebSocketSession session = this.sessionRegistry.getSession(sessionId);
+
+		if (session != null) {
+			session.sendMessage(wsMessage);
+		} else {
+			throw new MessagingException(message, "No WebSocket session with id '" + sessionId + "'");
+		}
 	}
 
 	@Override
