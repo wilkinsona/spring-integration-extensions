@@ -45,15 +45,8 @@ public class WebSocketOutboundChannelAdapterParser extends AbstractOutboundChann
 	@Override
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(CLASS_NAME_WEB_SOCKET_MESSAGE_HANDLER);
-
-		String transformerAttribute = element.getAttribute("transformer");
-		if (transformerAttribute != null) {
-			builder.addPropertyReference("transformer", transformerAttribute);
-		}
-
 		builder.addConstructorArgReference(WebSocketNamespaceUtils.registerSessionRegistryIfNecessary(parserContext.getRegistry()));
-
+		builder.addConstructorArgValue(new SubProtocolHandlerResolverParser().parseElement(element, parserContext));
 		return builder.getBeanDefinition();
 	}
-
 }

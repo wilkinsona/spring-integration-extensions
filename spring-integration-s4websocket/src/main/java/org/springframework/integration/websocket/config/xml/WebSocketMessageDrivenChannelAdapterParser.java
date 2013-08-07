@@ -42,8 +42,10 @@ public class WebSocketMessageDrivenChannelAdapterParser extends AbstractChannelA
 
 		BeanDefinitionBuilder adapterBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(CLASS_NAME_WEB_SOCKET_MESSAGE_DRIVEN_CHANNEL_ADAPTER);
-		adapterBuilder.addPropertyReference("outputChannel", channelName);
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(adapterBuilder,  element,  "transformer");
+
+		adapterBuilder.addConstructorArgValue(new SubProtocolHandlerResolverParser().parseElement(element, parserContext));
+		adapterBuilder.addConstructorArgReference(channelName);
+
 		parserContext.getRegistry().registerBeanDefinition("webSocketMessageDrivenChannelAdapter", adapterBuilder.getBeanDefinition());
 
 		BeanDefinitionBuilder requestHandlerBuilder = BeanDefinitionBuilder.genericBeanDefinition(CLASS_NAME_REQUEST_HANDLER_FACTORY_BEAN);
@@ -56,6 +58,7 @@ public class WebSocketMessageDrivenChannelAdapterParser extends AbstractChannelA
 			// TODO: make scheduler configurable instead of using the SI default
 			requestHandlerBuilder.addPropertyReference("taskScheduler", "taskScheduler");
 		}
+
 		return requestHandlerBuilder.getBeanDefinition();
 	}
 

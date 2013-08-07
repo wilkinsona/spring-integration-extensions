@@ -18,11 +18,11 @@ package org.springframework.integration.websocket.outbound;
 
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.websocket.core.SessionRegistry;
+import org.springframework.integration.websocket.support.SubProtocolHandlerResolver;
 import org.springframework.integration.websocket.support.WebSocketHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessagingException;
 import org.springframework.util.Assert;
-import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 /**
@@ -34,10 +34,11 @@ public class WebSocketMessageHandler extends AbstractMessageHandler {
 
 	private final SessionRegistry sessionRegistry;
 
-	private volatile WebSocketMessageOutboundTransformer transformer = new DefaultWebSocketMessageOutboundTransformer();
+	private final SubProtocolHandlerResolver protocolHandlerResolver;
 
-	public WebSocketMessageHandler(SessionRegistry sessionManager) {
+	public WebSocketMessageHandler(SessionRegistry sessionManager, SubProtocolHandlerResolver protocolHandlerResolver) {
 		this.sessionRegistry = sessionManager;
+		this.protocolHandlerResolver = protocolHandlerResolver;
 	}
 
 	@Override
@@ -45,12 +46,10 @@ public class WebSocketMessageHandler extends AbstractMessageHandler {
 		String sessionId = (String) message.getHeaders().get(WebSocketHeaders.WS_SESSION_ID);
 		Assert.notNull(sessionId, "No sessionId in message");
 
-		WebSocketMessage<?> wsMessage = transformer.transform(message);
-
 		WebSocketSession session = this.sessionRegistry.getSession(sessionId);
 
 		if (session != null) {
-			session.sendMessage(wsMessage);
+			this.protocolHandlerResolver.resolveSubProtocolHandler(session).handleMessageToClient(session, message);
 		} else {
 			throw new MessagingException(message, "No WebSocket session with id '" + sessionId + "'");
 		}
@@ -60,10 +59,4 @@ public class WebSocketMessageHandler extends AbstractMessageHandler {
 	public String getComponentType() {
 		return "websocket:outbound-channel-adapter";
 	}
-
-	public void setTransformer(WebSocketMessageOutboundTransformer transformer) {
-		Assert.notNull(transformer, "transformer must not be null");
-		this.transformer = transformer;
-	}
-
 }

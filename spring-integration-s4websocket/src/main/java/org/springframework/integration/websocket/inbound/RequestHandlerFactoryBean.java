@@ -6,9 +6,9 @@ import org.springframework.util.Assert;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeHandler;
 import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
+import org.springframework.web.socket.sockjs.SockJsHttpRequestHandler;
 import org.springframework.web.socket.sockjs.SockJsService;
-import org.springframework.web.socket.sockjs.support.DefaultSockJsService;
-import org.springframework.web.socket.sockjs.support.SockJsHttpRequestHandler;
+import org.springframework.web.socket.sockjs.transport.handler.DefaultSockJsService;
 
 public class RequestHandlerFactoryBean extends AbstractFactoryBean<Object>{
 
